@@ -135,119 +135,121 @@
 //   return compose(middlewares);
 // };
 
-import { Application } from "egg";
-import * as Nexus from "@nexus/schema";
-import requireAll from "require-all";
-import log from "./app/util/plugin/log";
-import connection from "./app/util/plugin/connection";
-import { ApolloServer, AuthenticationError } from "apollo-server-koa";
-import path from "path";
-// import schema from "./app/graphql"; // 注意路径！
-// import { Admin } from "@prisma/client";
-// import moment from "moment";
-import {
-  DateTimeResolver,
-  JSONObjectResolver,
-  TimeResolver,
-} from "graphql-scalars";
-const dirNameList = ["interface", "mutation", "object", "query"];
-import { Kind } from "graphql";
+// 213123123
 
-const types = dirNameList.map((dirName) => {
-  return requireAll({
-    // 自动加载目录下所有 .js 文件
-    dirname: `${__dirname}/${dirName}`,
-    filter: process.env.NODE_ENV === "production" ? /(.+)\.js$/ : /(.+)\.ts$/,
-    // filter: /(.+)\.ts$/,
-    recursive: true,
-    resolve(obj) {
-      return "default" in obj ? obj.default : obj;
-    },
-  });
-});
+// import { Application } from "egg";
+// import * as Nexus from "@nexus/schema";
+// import requireAll from "require-all";
+// import log from "./app/util/plugin/log";
+// import connection from "./app/util/plugin/connection";
+// import { ApolloServer, AuthenticationError } from "apollo-server-koa";
+// import path from "path";
+// // import schema from "./app/graphql"; // 注意路径！
+// // import { Admin } from "@prisma/client";
+// // import moment from "moment";
+// import {
+//   DateTimeResolver,
+//   JSONObjectResolver,
+//   TimeResolver,
+// } from "graphql-scalars";
+// const dirNameList = ["interface", "mutation", "object", "query"];
+// import { Kind } from "graphql";
 
-const jsonScalar = Nexus.asNexusMethod(JSONObjectResolver, "json");
-const dateTimeScalar = Nexus.asNexusMethod(DateTimeResolver, "date");
-const timeScalar = Nexus.asNexusMethod(TimeResolver, "time");
-const ImageUrl = Nexus.scalarType({
-  name: "ImageUrl",
-  asNexusMethod: "imageUrl",
-  description: "Image url custom scalar type",
-  parseValue(value) {
-    return value;
-  },
-  serialize(value) {
-    return value;
-  },
-  parseLiteral(ast) {
-    if (ast.kind === Kind.STRING) {
-      return new Date(ast.value);
-    }
-    return null;
-  },
-});
+// const types = dirNameList.map((dirName) => {
+//   return requireAll({
+//     // 自动加载目录下所有 .js 文件
+//     dirname: `${__dirname}/${dirName}`,
+//     filter: process.env.NODE_ENV === "production" ? /(.+)\.js$/ : /(.+)\.ts$/,
+//     // filter: /(.+)\.ts$/,
+//     recursive: true,
+//     resolve(obj) {
+//       return "default" in obj ? obj.default : obj;
+//     },
+//   });
+// });
 
-const schema = Nexus.makeSchema({
-  types: [...types, jsonScalar, dateTimeScalar, timeScalar, ImageUrl],
-  outputs: {
-    schema: __dirname + "/../../schema.graphql",
-    typegen: __dirname + "/../../typings.ts",
-  },
-  typegenAutoConfig: {
-    sources: [
-      {
-        source: path.join(
-          __dirname,
-          "path",
-          "to",
-          "contextModule",
-          "contextModule.ts"
-        ),
-        alias: "t",
-      },
-    ],
-    contextType: "t.Context",
-  },
-  plugins: [
-    log,
-    Nexus.fieldAuthorizePlugin({
-      formatError: (error) => {
-        return error.error;
-      },
-    }),
-    Nexus.declarativeWrappingPlugin(),
-    connection,
-  ],
-});
+// const jsonScalar = Nexus.asNexusMethod(JSONObjectResolver, "json");
+// const dateTimeScalar = Nexus.asNexusMethod(DateTimeResolver, "date");
+// const timeScalar = Nexus.asNexusMethod(TimeResolver, "time");
+// const ImageUrl = Nexus.scalarType({
+//   name: "ImageUrl",
+//   asNexusMethod: "imageUrl",
+//   description: "Image url custom scalar type",
+//   parseValue(value) {
+//     return value;
+//   },
+//   serialize(value) {
+//     return value;
+//   },
+//   parseLiteral(ast) {
+//     if (ast.kind === Kind.STRING) {
+//       return new Date(ast.value);
+//     }
+//     return null;
+//   },
+// });
 
-const isDev = process.env.NODE_ENV !== "production";
+// const schema = Nexus.makeSchema({
+//   types: [...types, jsonScalar, dateTimeScalar, timeScalar, ImageUrl],
+//   outputs: {
+//     schema: __dirname + "/../../schema.graphql",
+//     typegen: __dirname + "/../../typings.ts",
+//   },
+//   typegenAutoConfig: {
+//     sources: [
+//       {
+//         source: path.join(
+//           __dirname,
+//           "path",
+//           "to",
+//           "contextModule",
+//           "contextModule.ts"
+//         ),
+//         alias: "t",
+//       },
+//     ],
+//     contextType: "t.Context",
+//   },
+//   plugins: [
+//     log,
+//     Nexus.fieldAuthorizePlugin({
+//       formatError: (error) => {
+//         return error.error;
+//       },
+//     }),
+//     Nexus.declarativeWrappingPlugin(),
+//     connection,
+//   ],
+// });
 
-export default (app: Application) => {
-  app.beforeStart(async () => {
-    const graphqlConfig = app.config.graphql || {};
-    const {
-      router = "/graphql",
-      graphiql = true,
-      ...ApolloServerConfig
-    } = graphqlConfig;
+// const isDev = process.env.NODE_ENV !== "production";
 
-    const server = new ApolloServer({
-      schema,
-      context: async ({ ctx }) => {
-        // ... 你的 context 逻辑（略）
-      },
-      debug: isDev,
-      formatError: (error) => {
-        // ... 你的错误处理（略）
-      },
-      ...ApolloServerConfig,
-    });
+// export default (app: Application) => {
+//   app.beforeStart(async () => {
+//     const graphqlConfig = app.config.graphql || {};
+//     const {
+//       router = "/graphql",
+//       graphiql = true,
+//       ...ApolloServerConfig
+//     } = graphqlConfig;
 
-    await server.start(); // ⚠️ 必须调用！
+//     const server = new ApolloServer({
+//       schema,
+//       context: async ({ ctx }) => {
+//         // ... 你的 context 逻辑（略）
+//       },
+//       debug: isDev,
+//       formatError: (error) => {
+//         // ... 你的错误处理（略）
+//       },
+//       ...ApolloServerConfig,
+//     });
 
-    // 直接挂载到 Egg（Koa）应用
-    server.applyMiddleware({ app: app as any, path: router });
+//     await server.start(); // ⚠️ 必须调用！
 
-    app.logger.info(`✅ GraphQL ready at ${router}`);
-  });
-};
+//     // 直接挂载到 Egg（Koa）应用
+//     server.applyMiddleware({ app: app as any, path: router });
+
+//     app.logger.info(`✅ GraphQL ready at ${router}`);
+//   });
+// };

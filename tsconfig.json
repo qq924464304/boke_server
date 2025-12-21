@@ -1,9 +1,12 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
+    "target": "ES2021",
+    "module": "CommonJS", // ← 关键！
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "strict": true,
+    "outDir": "./dist",
     "noImplicitAny": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -27,6 +30,7 @@
       "@/*": ["app/*"]
     }
   },
+  "include": ["app", "config", "app.ts", "agent.ts"],
   // "include": ["app/**/*", "config/**/*", "typings/**/*","app.ts","agent.ts"],
   "exclude": ["app/public", "app/web", "app/views", "node_modules/**/*"]
 }
