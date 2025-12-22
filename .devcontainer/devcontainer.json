@@ -1,7 +1,8 @@
 {
   "name": "My Node.js & TypeScript App",
   "build": {
-    "dockerfile": "Dockerfile",
+    "dockerfile": "../Dockerfile",
+    "context": "..",
     "target": "base"
   },
   "workspaceFolder": "/app",
