@@ -1,7 +1,7 @@
 import requireAll = require("require-all");
 const dirNameList = ["interface", "mutation", "object", "query"];
 
-console.log("--- Config types Loading:");
+// console.log("--- Config types Loading:1qqq");
 
 const types = dirNameList.map((dirName) => {
   return requireAll({

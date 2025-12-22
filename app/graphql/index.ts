@@ -1,7 +1,7 @@
-// import types from "./types";
-import log from "../../util/plugin/log";
+import types from "./types";
+import log from "../util/plugin/log";
 import * as Nexus from "@nexus/schema";
-import connection from "../../util/plugin/connection";
+import connection from "../util/plugin/connection";
 import path from "path";
 import {
   DateTimeResolver,
@@ -31,10 +31,10 @@ const ImageUrl = Nexus.scalarType({
   },
 });
 
-console.log("--- Config graphql loading:");
+// console.log("--- Config graphql loading:123123");
 // ...types,
 const schema = Nexus.makeSchema({
-  types: [jsonScalar, dateTimeScalar, timeScalar, ImageUrl],
+  types: [...types, jsonScalar, dateTimeScalar, timeScalar, ImageUrl],
   outputs: {
     schema: __dirname + "/../../schema.graphql",
     typegen: __dirname + "/../../typings.ts",

@@ -253,3 +253,23 @@
 //     app.logger.info(`✅ GraphQL ready at ${router}`);
 //   });
 // };
+import { Application } from "egg";
+
+declare module "egg" {
+  interface Application {
+    apolloServer?: any;
+  }
+}
+
+export default (app: Application) => {
+  const { router } = app;
+
+  // 👇 手动挂载 GraphQL 路由（核心步骤！）
+  if (app && app.apolloServer) {
+    // egg-apollo-server 会注入 apolloServer 中间件
+    router.all("/graphql", app.apolloServer);
+  }
+
+  // 其他你的 API 路由...
+  // router.get('/api/posts', app.controller.post.list);
+};

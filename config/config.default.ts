@@ -1,5 +1,5 @@
 import { EggAppConfig, PowerPartial } from "egg";
-import schema from "../app/graphql/query"; // Adjusted path to the Nexus schema
+import schema from "../app/graphql"; // Adjusted path to the Nexus schema
 import { Admin } from "@prisma/client";
 import { AuthenticationError } from "apollo-server-koa";
 
@@ -17,7 +17,7 @@ export default (appInfo) => {
       mode: "file" as const,
     },
   } as PowerPartial<EggAppConfig>;
-  console.log("--- Config Keys Loading:", config.keys);
+  // console.log("--- Config Keys Loading:", config.keys);
   // Egg.js 使用 config.keys 作为 Cookie 加密和签名的密钥（用于 session、CSRF 保护等安全功能）。
   // config.keys =  // 建议使用动态生成的密钥
   // 中间件
@@ -28,74 +28,74 @@ export default (appInfo) => {
     sourceUrl: `https://github.com/eggjs/examples/tree/master/${appInfo.name}`,
   };
 
-  // 👇 新增 GraphQL 配置
-  config.graphql = {
-    router: "/graphql", // GraphQL 路径
-    app: true, // 挂载到应用
-    agent: false,
-    graphiql: true, // 开发环境开启 Playground
-    apolloServerOptions: {
-      schema, // 使用你现有的 Nexus schema
-      context: async ({ ctx }) => {
-        // 👇 复用你原来的认证逻辑！
-        try {
-          console.log("--- Config Keys Loading:", config.keys);
-          const { authorization } = ctx.req.headers;
-          let token: any = null;
-          let admin: Admin | null = null;
-          let adminLoginAccount: any | null = null;
-
-          if (authorization) {
-            token = ctx.service.encryption.decodeToken(authorization as string);
-            const {
-              sub: { adminId, adminLoginAccountId },
-            } = token;
-
-            if (adminId) {
-              admin = await ctx.db.admin.findUnique({
-                where: { id: adminId },
-                rejectOnNotFound: true,
-                include: { platform: true },
-              });
-            }
-            if (adminLoginAccountId) {
-              adminLoginAccount = await ctx.db.adminLoginAccount.findUnique({
-                where: { id: adminLoginAccountId },
-                rejectOnNotFound: true,
-              });
-            }
-
-            ctx.token = token;
-            ctx.admin = admin;
-            ctx.adminLoginAccount = adminLoginAccount;
-            ctx.adminId = adminId;
-            ctx.adminLoginAccountId = adminLoginAccountId;
-          }
-
-          return ctx; // 返回给 GraphQL resolver
-        } catch (error) {
-          ctx.logger.error("GraphQL auth error:", error);
-          throw new AuthenticationError("登录已过期，请重新登录");
-        }
-      },
-      formatError: (error) => {
-        // 👇 复用你原来的错误格式化逻辑
-        if (process.env.NODE_ENV !== "production") {
-          console.error("GraphQL error:", error);
-        }
-
-        switch (error.originalError?.name) {
-          case "NotFoundError":
-            return { message: "记录不存在", code: "NOT_FOUND" };
-          case "AuthenticationError":
-            return { message: "未授权", code: "UNAUTHORIZED" };
-          default:
-            return { message: "服务器内部错误", code: "INTERNAL_ERROR" };
-        }
-      },
+  // 👇 关键配置：忽略 /graphql 的 CSRF 检查
+  config.security = {
+    csrf: {
+      ignore: ["/graphql"], // 忽略该路径的 CSRF 验证
     },
   };
-  console.log("--- Config Keys Loading:", config.keys);
+
+  // console.log("--- schema", schema);
+
+  // config.apolloServer = {
+  //   path: "/graphql", // 路由路径
+  //   graphiql: true, // 开启 Playground（开发环境）
+  //   apolloServerOptions: {
+  //     schema, // 你的 Nexus schema
+  //     context: async ({ ctx }) => {
+  //
+  //       try {
+  //         const { authorization } = ctx.req.headers;
+  //         if (authorization) {
+  //           const token = ctx.service.encryption.decodeToken(
+  //             authorization as string
+  //           );
+  //           const {
+  //             sub: { adminId, adminLoginAccountId },
+  //           } = token;
+
+  //           if (adminId) {
+  //             const admin = await ctx.db.admin.findUnique({
+  //               where: { id: adminId },
+  //               include: { platform: true },
+  //             });
+  //             ctx.admin = admin;
+  //           }
+  //           if (adminLoginAccountId) {
+  //             const adminLoginAccount =
+  //               await ctx.db.adminLoginAccount.findUnique({
+  //                 where: { id: adminLoginAccountId },
+  //               });
+  //             ctx.adminLoginAccount = adminLoginAccount;
+  //           }
+  //           ctx.token = token;
+  //         }
+  //         return ctx;
+  //       } catch (error) {
+  //         ctx.logger.error("GraphQL auth error:", error);
+  //         throw new AuthenticationError("登录已过期，请重新登录");
+  //       }
+  //     },
+  //     formatError: (error) => {
+  //       if (process.env.NODE_ENV !== "production") {
+  //         console.error("GraphQL error:", error);
+  //       }
+  //       switch (error.originalError?.name) {
+  //         case "NotFoundError":
+  //           return { message: "记录不存在", code: "NOT_FOUND" };
+  //         case "AuthenticationError":
+  //           return { message: "未授权", code: "UNAUTHORIZED" };
+  //         default:
+  //           return { message: "服务器内部错误", code: "INTERNAL_ERROR" };
+  //       }
+  //     },
+  //   },
+  // };
+
+  config.logger = {
+    consoleLevel: "INFO",
+  };
+  // console.log("--- Config Keys Loading:111", config.graphql);
   return {
     ...config,
     bizConfig,
